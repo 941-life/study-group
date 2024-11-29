@@ -2,26 +2,39 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.cluster import AgglomerativeClustering
 from vector import load_from_json
+from sklearn.manifold import MDS
 
+# Similarity Calculation
+def calculate_similarity_matrix(vectors):
+    array_vectors = np.array(vectors)  # List를 NumPy 배열로 변환
+    matrix = cosine_similarity(array_vectors)  # 코사인 유사도 행렬 계산
+    return matrix
 
-# 유사도 계산 함수
-def calculate_similarity_matrix(student_vectors):
-    vectors = np.array(student_vectors)  # List를 NumPy 배열로 변환
-    similarity_matrix = cosine_similarity(vectors)  # 코사인 유사도 행렬 계산
-    return similarity_matrix
-
-
-# 유사도 행렬 출력 함수
-def print_similarity_matrix(students, similarity_matrix):
+# Similarity matrix print
+def print_similarity_matrix(json, matrix):
     print("\nSimilarity Matrix:")
-    header = " " * 15 + " ".join([f"{student['name'][:10]:<10}" for student in students])
+
+    # header, print student's name and dividing line
+    header = (" " * 10) + " ".join([f"{student['name'][:10]:>10}" for student in json])
     print(header)
-    for i, student in enumerate(students):
-        row = " ".join([f"{similarity_matrix[i, j]:.2f}" for j in range(len(students))])
+    print("-" * (10 + (11 * len(json))))  # add '-' for readability
+
+    # similarity matrix
+    for i, student in enumerate(json):
+        row = " ".join([f"{matrix[i, j]:>10.2f}" for j in range(len(json))])
         print(f"{student['name'][:10]:<10} {row}")
 
+# Return AgglomerativeClustering with initialize
+def agglomerative_clustering():
+    agglo_clustering = AgglomerativeClustering(
+        n_clusters=None,  # Automatically determine the number of clusters
+        distance_threshold=0.7,  # Set similarity threshold (1 - threshold = distance)
+        metric="precomputed",  # Using a pre-calculated similarity matrix
+        linkage="complete"  # Calculate the distances between clusters: complete Linkage
+    )
+    return agglo_clustering
 
-# 그룹화 결과 출력 함수
+# Grouping result print
 def print_clusters(students, labels):
     print("\nCluster Results:")
     clusters = {}
@@ -30,25 +43,33 @@ def print_clusters(students, labels):
     for cluster_id, names in clusters.items():
         print(f"Group {cluster_id}: {', '.join(names)}")
 
+# Return MDS scaled matrix, default : 2-d
+def mds_scaling(matrix):
+    """
+    :MDS:
+    Create an instance of an MDS class
+        n_components : number of dimensions; 2-d
+        dissimilarity : Indicators indicating distance or similarity between data; use pre-computed matrix
+        random_state : Random seed to make the difference between outcomes due to amorphousness constant
+    """
+    mds = MDS(n_components=2, dissimilarity="precomputed", random_state=42)
+    coordinates = mds.fit_transform(matrix)
+    return coordinates
 
 if __name__ == "__main__":
-    students = load_from_json("students_data.json")
+    students = load_from_json("students_data.json") # load json
 
-    # 학생 벡터 추출/ 유사도 행렬 계산
+    # Student vector extraction / Calculate the Similarity Matrix
     student_vectors = [student["vector"] for student in students]
     similarity_matrix = calculate_similarity_matrix(student_vectors)
 
-    # 유사도 행렬 출력
     print_similarity_matrix(students, similarity_matrix)
 
-    # 클러스터링 수행 (Agglomerative Clustering 사용)
-    clustering = AgglomerativeClustering(
-        n_clusters=None,  # 자동으로 클러스터 수 결정
-        distance_threshold=0.7,  # 유사도 임계값 설정 (1 - threshold = 거리)
-        metric="precomputed",  # 사전 계산된 유사도 행렬 사용
-        linkage="complete"  # 가장 멀리 떨어진 두 점 사이의 거리 기준
-    )
-    labels = clustering.fit_predict(1 - similarity_matrix)  # 거리 행렬로 변환 후 클러스터링
+    # Converting to distance matrix
+    distance_matrix = 1 - similarity_matrix
 
-    # 그룹화 결과 출력
+    # Receives Agglomeration clustering with values set / clustering
+    clustering = agglomerative_clustering()
+    labels = clustering.fit_predict(distance_matrix)
+
     print_clusters(students, labels)

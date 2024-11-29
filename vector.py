@@ -25,6 +25,7 @@ def process_days(days):
 
     Returns:
         list of int: A binary vector indicating presence for each day of the week.
+        if input is "Mon, Wed", vector is : [1, 0, 1, 0, 0, 0, 0]
     """
     week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]  # Standard order of days
     return [1 if day in days else 0 for day in week]  # Mark 1 for present days, 0 otherwise
@@ -39,6 +40,7 @@ def process_grade(grade, max_grade=4):
 
     Returns:
         list of int: A one-hot encoded vector for the grade.
+        if grade is 2, vector is: [0, 1, 0 ,0]
     """
     vector = [0] * max_grade  # Initialize a zero vector
     vector[grade - 1] = 1  # Set the corresponding grade position to 1
