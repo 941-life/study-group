@@ -6,8 +6,8 @@ from sklearn.manifold import MDS
 
 # Similarity Calculation
 def calculate_similarity_matrix(vectors):
-    array_vectors = np.array(vectors)  # List를 NumPy 배열로 변환
-    matrix = cosine_similarity(array_vectors)  # 코사인 유사도 행렬 계산
+    array_vectors = np.array(vectors)  # convert list into numpy array
+    matrix = cosine_similarity(array_vectors)  # calculate cosine similarity matrix
     return matrix
 
 # Similarity matrix print
@@ -39,7 +39,7 @@ def print_clusters(students, labels):
     print("\nCluster Results:")
     clusters = {}
     for i, label in enumerate(labels):
-        clusters.setdefault(label, []).append(students[i]["name"])  # 같은 그룹의 학생들을 묶음
+        clusters.setdefault(label, []).append(students[i]["name"])  # Bind same group's student
     for cluster_id, names in clusters.items():
         print(f"Group {cluster_id}: {', '.join(names)}")
 
