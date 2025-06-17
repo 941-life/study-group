@@ -2,6 +2,14 @@
 
 A service for matching study groups using cosine similarity, agglomerative clustering, and Multi-Dimensional Scaling (MDS).
 
+## Visualization Examples
+
+### Similarity Matrix  
+![Similarity Matrix](docs/images/similarity_matrix.png)
+
+### Clustering Results  
+![Clustering Results](docs/images/clustering_results.png)
+
 ## Features
 
 - Student profile management (JSON-based)
