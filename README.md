@@ -66,11 +66,7 @@ The system can be configured through `config.py`:
 3. Commit your changes
 4. Push to the branch
 5. Create a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
+   
 # Used library
 
 - numpy 
