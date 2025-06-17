@@ -3,14 +3,74 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.cluster import AgglomerativeClustering
 from vector import load_from_json
 from sklearn.manifold import MDS
+import logging
+from typing import List, Dict, Any, Tuple, Optional
+from config import *
+
+# Configure logging
+logger = logging.getLogger(__name__)
+logger.setLevel(getattr(logging, LOG_LEVEL))
+
+# Create console handler if no handlers exist
+if not logger.handlers:
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(getattr(logging, LOG_LEVEL))
+    formatter = logging.Formatter(LOG_FORMAT)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+class ClusteringError(Exception):
+    """Custom exception for clustering-related errors"""
+    pass
 
 # Similarity Calculation
-def calculate_similarity_matrix(vectors):
-    array_vectors = np.array(vectors)  # convert list into numpy array
-    matrix = cosine_similarity(array_vectors)  # calculate cosine similarity matrix
-    return matrix
+def calculate_similarity_matrix(vectors: List[List[int]]) -> np.ndarray:
+    """
+    Calculate cosine similarity matrix from student vectors.
+    
+    Args:
+        vectors: List of student vectors
+    
+    Returns:
+        Cosine similarity matrix
+    
+    Raises:
+        ClusteringError: If there's an error calculating the similarity matrix
+    """
+    try:
+        vectors_array = np.array(vectors)
+        similarity_matrix = cosine_similarity(vectors_array)
+        logger.info("Successfully calculated similarity matrix")
+        return similarity_matrix
+    except Exception as e:
+        logger.error(f"Error calculating similarity matrix: {e}")
+        raise ClusteringError(f"Failed to calculate similarity matrix: {e}")
 
 # Similarity matrix print
+def print_similarity_matrix(students: List[Dict[str, Any]], matrix: np.ndarray) -> None:
+    """
+    Print the similarity matrix in a formatted manner.
+    
+    Args:
+        students: List of student data dictionaries
+        matrix: Similarity matrix
+    """
+    try:
+        print("\nSimilarity Matrix:")
+        print("-" * 80)
+        print("Student Names:", end="\t")
+        for student in students:
+            print(f"{student['name']:>10}", end="\t")
+        print("\n" + "-" * 80)
+        
+        for i, student in enumerate(students):
+            print(f"{student['name']:<10}", end="\t")
+            for j in range(len(students)):
+                print(f"{matrix[i][j]:10.3f}", end="\t")
+            print()
+        print("-" * 80)
+    except Exception as e:
+        logger.error(f"Error printing similarity matrix: {e}")
 def print_similarity_matrix(json, matrix):
     print("\nSimilarity Matrix:")
 
@@ -57,7 +117,7 @@ def mds_scaling(matrix):
     return coordinates
 
 if __name__ == "__main__":
-    students = load_from_json("students_data.json") # load json
+    students = load_from_json("students_data.json")
 
     # Student vector extraction / Calculate the Similarity Matrix
     student_vectors = [student["vector"] for student in students]
